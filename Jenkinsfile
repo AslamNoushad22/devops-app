@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'aslamnoushad22/devops-app'
-        IMAGE_TAG  = '1.0'
+        IMAGE_TAG = '1.0'
     }
 
     stages {
