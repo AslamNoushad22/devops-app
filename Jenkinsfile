@@ -1,41 +1,28 @@
-
 pipeline {
     agent any
 
-<<<<<<< HEAD
-    stages {
-        stage('Checkout') {
-            steps {
-                echo 'Repository checkout successful'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Build stage running'
-=======
     environment {
         IMAGE_NAME = 'aslamnoushad22/devops-app'
-        IMAGE_TAG = '1.0'
+        IMAGE_TAG  = '1.0'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Source code checked out by Jenkins SCM'
->>>>>>> 662b7f9 (Add Jenkins pipeline and multi-stage Dockerfile)
             }
         }
 
         stage('Test') {
             steps {
-<<<<<<< HEAD
-                echo 'Test stage running'
-=======
                 sh '''
-                    docker build --target builder -t devops-app-test .
-                    docker run --rm --entrypoint python \
-                        devops-app-test -m pytest -v /build
+                    python3 -m venv .venv
+                    . .venv/bin/activate
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install pytest
+                    pytest -v
                 '''
             }
         }
@@ -45,24 +32,37 @@ pipeline {
                 sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                 '''
->>>>>>> 662b7f9 (Add Jenkins pipeline and multi-stage Dockerfile)
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            -u "$DOCKER_USERNAME" \
+                            --password-stdin
+
+                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-<<<<<<< HEAD
             echo 'Pipeline completed successfully!'
         }
-        failure {
-            echo 'Pipeline failed. Check the console output.'
-=======
-            echo 'Tests passed and Docker image built successfully.'
-        }
+
         failure {
             echo 'Pipeline failed. Check the stage logs.'
->>>>>>> 662b7f9 (Add Jenkins pipeline and multi-stage Dockerfile)
         }
     }
 }
